@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>View Source Modal — Gunz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #091a2e;
+    --bg-light: #0d2543;
+    --card-bg: #112d4e;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #4c82f7;
+    --accent-hover: #5d92ff;
+    --glass: rgba(255, 255, 255, 0.05);
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    font-family: 'Inter', ui-sans-serif, system-ui, Arial, sans-serif;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    line-height: 1.6;
+    overflow: hidden;
+  }
+  
+  /* --- Halaman Konten (Intro, QR, App) --- */
+  .content-page {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 100;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    padding: 24px;
+  }
+
+  /* Animasi untuk transisi antar halaman */
+  .content-page.hide {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+  }
+  .content-page.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  }
+  
+  .developer-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 20px rgba(76, 130, 247, 0.4);
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 10px rgba(76, 130, 247, 0.4); }
+    50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(76, 130, 247, 0.6); }
+    100% { transform: scale(1); box-shadow: 0 0 10px rgba(76, 130, 247, 0.4); }
+  }
+  
+  .page-text {
+    text-align: center;
+    max-width: 500px;
+  }
+  
+  .page-text h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 10px;
+  }
+  
+  .page-text p {
+    font-size: 16px;
+    color: var(--text-muted);
+  }
+
+  .page-actions {
+      margin-top: 10px;
+  }
+  
+  /* --- Halaman QR Code --- */
+  .qr-code-page {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .qr-code {
+    width: 250px;
+    height: 250px;
+    border-radius: 12px;
+    background: white;
+    padding: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  .qr-code:hover {
+    transform: scale(1.05);
+  }
+  .qr-code-info {
+    margin-top: 20px;
+    max-width: 400px;
+  }
+
+  /* --- Main App --- */
+  .app-container {
+    width: 100%;
+    max-width: 980px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .app-container.show {
+    opacity: 1;
+  }
+  .app {
+    background: var(--card-bg);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  h1 {
+    margin: 0 0 10px 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  
+  p.note {
+    margin: 0 0 20px 0;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  
+  .row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .url-input {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--glass);
+    color: inherit;
+    outline: none;
+    font-size: 15px;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .url-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(76, 130, 247, 0.2);
+  }
+  
+  button.btn,
+  button.ghost {
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.2s ease;
+  }
+  
+  button.btn {
+    background: linear-gradient(90deg, var(--accent), #5d75f7);
+    color: white;
+    box-shadow: 0 8px 20px rgba(76, 130, 247, 0.3);
+  }
+  
+  button.btn:hover {
+    box-shadow: 0 10px 25px rgba(76, 130, 247, 0.4);
+    transform: translateY(-2px);
+  }
+  
+  button.ghost {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+  }
+  
+  button.ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+  }
+  
+  .examples {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .chip {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+  }
+  
+  .chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+  }
+  
+  /* modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    padding: 24px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+  
+  .modal {
+    width: 100%;
+    max-width: 1100px;
+    max-height: 90vh;
+    background: #0d2543;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .modal-backdrop.show {
+    display: flex;
+  }
+  
+  .modal-backdrop.show .modal {
+    transform: scale(1);
+    opacity: 1;
+  }
+  
+  .modal-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .modal-title {
+    font-weight: 700;
+    font-size: 16px;
+    flex: 1;
+  }
+  
+  .modal-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .modal-body {
+    padding: 20px;
+    overflow: auto;
+    background: #07192f;
+    color: #e2e8f0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  pre.source {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+    margin: 0;
+    line-height: 1.45;
+  }
+  
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .status {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-left: 10px;
+    font-style: italic;
+  }
+  
+  .modal .btn,
+  .modal .ghost {
+    padding: 8px 14px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+
+  /* Notifikasi Salin */
+  .copy-notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #22c55e;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    z-index: 100;
+  }
+  .copy-notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  
+  /* responsive */
+  @media (max-width: 640px) {
+    .row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    .modal {
+      max-width: 100%;
+    }
+    .qr-code {
+        width: 180px;
+        height: 180px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div id="introPage" class="content-page show">
+    <img src="https://files.catbox.moe/qihiv8.png" alt="Developer Miray" class="developer-photo">
+    <div class="page-text">
+      <h2>Hai, Ini Miray!</h2>
+      <p>Selamat datang di View Page Source. <br>Sebuah web kecil untuk melihat kode sumber halaman web lain By Gunz .</p>
+    </div>
+    <div class="page-actions">
+        <button id="continueBtn" class="btn">Lanjut</button>
+    </div>
+  </div>
+
+  <div id="qrPage" class="content-page hide">
+    <a href="https://saweria.co/gunzz" target="_blank" rel="noopener noreferrer">
+      <img src="https://files.catbox.moe/bpafb8.png" alt="QR Code Miray" class="qr-code">
+    </a>
+    <div class="qr-code-info page-text">
+      <h2>Dukungan Untuk Developer</h2>
+      <p>Silakan pindai kode QR di atas atau klick.<br> Di sana, Anda bisa memberi dukungan untuk developer agar lebih semangat dan rajin membagikan tools.</p>
+    </div>
+    <div class="page-actions">
+        <button id="backBtn" class="ghost">Kembali</button>
+        <button id="toAppBtn" class="btn">Masuk Aplikasi</button>
+    </div>
+  </div>
+
+  <div id="appContainer" class="app-container">
+    <div class="app" role="main">
+      <h1>Viewing web code</h1>
+      <p class="note">Masukkan URL <code></code>. Kalau server target menolak CORS, saya akan coba lewat proxy publik.</p>
+
+      <div class="row" style="margin-bottom:8px;">
+        <input id="url" class="url-input" placeholder="Masukkan URL" value="">
+        <button id="fetchBtn" class="btn">Lihat Source</button>
+        <button id="clearBtn" class="ghost">Bersihkan</button>
+      </div>
+
+      <div class="examples">
+        
+        <div class="chip" data-url="https://example.com/">example.com</div>
+        <div class="chip" data-url="https://www.wikipedia.org/">wikipedia.org</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="backdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Source viewer">
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">Source — </div>
+        <div class="modal-actions">
+          <div class="toolbar">
+            <button id="copyBtn" class="btn">Salin Kode</button>
+            <button id="downloadBtn" class="btn">Download</button>
+            <button id="closeBtn" class="ghost">Tutup</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+          <div id="status" class="status">Menunggu...</div>
+        </div>
+        <pre id="source" class="source"><code>// Source akan tampil di sini...</code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <div id="copyNotification" class="copy-notification">
+    Tersalin!
+  </div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const urlInput = $('#url');
+  const fetchBtn = $('#fetchBtn');
+  const clearBtn = $('#clearBtn');
+  const backdrop = $('#backdrop');
+  const modalTitle = $('#modalTitle');
+  const sourceEl = $('#source');
+  const statusEl = $('#status');
+  const closeBtn = $('#closeBtn');
+  const downloadBtn = $('#downloadBtn');
+  const copyBtn = $('#copyBtn');
+  const chips = document.querySelectorAll('.chip');
+  const copyNotification = $('#copyNotification');
+
+  // New UI elements
+  const introPage = $('#introPage');
+  const continueBtn = $('#continueBtn');
+  const qrPage = $('#qrPage');
+  const backBtn = $('#backBtn');
+  const toAppBtn = $('#toAppBtn');
+  const appContainer = $('#appContainer');
+
+  // Halaman 1: Intro Developer
+  continueBtn.addEventListener('click', () => {
+    introPage.classList.remove('show');
+    introPage.classList.add('hide');
+    qrPage.classList.add('show');
+    qrPage.classList.remove('hide');
+  });
+
+  // Halaman 2: QR Code
+  backBtn.addEventListener('click', () => {
+    qrPage.classList.remove('show');
+    qrPage.classList.add('hide');
+    introPage.classList.add('show');
+    introPage.classList.remove('hide');
+  });
+
+  // Halaman 3: Main App
+  toAppBtn.addEventListener('click', () => {
+    qrPage.classList.remove('show');
+    qrPage.classList.add('hide');
+    appContainer.classList.add('show');
+  });
+
+  chips.forEach(c => c.addEventListener('click', e => {
+    urlInput.value = c.dataset.url;
+  }));
+
+  clearBtn.addEventListener('click', () => {
+    urlInput.value = '';
+  });
+
+  closeBtn.addEventListener('click', hideModal);
+  backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop) hideModal(); });
+
+  downloadBtn.addEventListener('click', () => {
+    const txt = sourceEl.innerText || '';
+    const url = urlInput.value.trim() || 'source';
+    const safeName = url.replace(/(^https?:\/\/|[^a-z0-9._-])/ig,'_').slice(0,120) || 'source';
+    const blob = new Blob([txt], {type:'text/html;charset=utf-8'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = safeName + '.html';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  });
+
+  copyBtn.addEventListener('click', () => {
+    const codeToCopy = sourceEl.innerText;
+    if (codeToCopy) {
+      navigator.clipboard.writeText(codeToCopy).then(() => {
+        showNotification('Tersalin!');
+      }).catch(err => {
+        console.error('Gagal menyalin:', err);
+        alert('Gagal menyalin kode. Silakan coba lagi.');
+      });
+    }
+  });
+
+  fetchBtn.addEventListener('click', async () => {
+    const raw = (urlInput.value || '').trim();
+    if(!raw){
+      alert('Masukkan URL terlebih dahulu.');
+      return;
+    }
+    let parsed;
+    try{
+      parsed = new URL(raw);
+    }catch(e){
+      alert('URL tidak valid. Pastikan formatnya lengkap (https://...).');
+      return;
+    }
+
+    showModal();
+    modalTitle.textContent = 'Source — ' + parsed.hostname;
+    sourceEl.textContent = '';
+    statusEl.textContent = 'Mencoba fetch langsung...';
+
+    const candidates = [
+      {label:'Direct', url: parsed.href},
+      {label:'AllOrigins proxy', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(parsed.href)},
+      {label:'CORSProxy (corsproxy.io)', url: 'https://corsproxy.io/?' + encodeURIComponent(parsed.href)}
+    ];
+
+    let success = false;
+    let finalText = '';
+    for (let i=0; i<candidates.length; i++){
+      const attempt = candidates[i];
+      statusEl.textContent = `Mencoba: ${attempt.label}...`;
+      try{
+        const res = await fetch(attempt.url, {redirect:'follow'});
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        const text = await res.text();
+        if(text && text.length > 0){
+          finalText = text;
+          success = true;
+          statusEl.textContent = `Berhasil lewat: ${attempt.label}`;
+          break;
+        } else {
+          statusEl.textContent = `Response kosong dari: ${attempt.label}`;
+        }
+      }catch(err){
+        statusEl.textContent = `Gagal (${attempt.label}): ${err.message}`;
+        await new Promise(r => setTimeout(r, 300));
+      }
+    }
+
+    if(!success){
+      sourceEl.textContent = '// Gagal mengambil source. Beberapa kemungkinan:\n' +
+        '// 1) Situs menolak CORS (server tidak mengizinkan akses dari browser).\n' +
+        '// 2) Situs memblokir proxy publik.\n' +
+        '// 3) Situs memerlukan autentikasi atau ada proteksi anti-bot.\n\n' +
+        '// Coba jalankan fetch di server (server-side) atau gunakan proxy Anda sendiri.\n';
+      statusEl.textContent = 'Gagal mengambil source dari semua metode.';
+      return;
+    }
+
+    sourceEl.textContent = finalText;
+  });
+
+  function showModal(){
+    backdrop.classList.add('show');
+    backdrop.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+  function hideModal(){
+    backdrop.classList.remove('show');
+    backdrop.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+
+  function showNotification(message) {
+    copyNotification.textContent = message;
+    copyNotification.classList.add('show');
+    setTimeout(() => {
+      copyNotification.classList.remove('show');
+    }, 2000);
+  }
+
+})();
+</script>
+</body>
+  </html>
